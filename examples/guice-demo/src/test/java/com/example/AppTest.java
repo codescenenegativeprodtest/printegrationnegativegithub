@@ -1,46 +1,116 @@
 package com.example;
 
-import static org.junit.Assert.assertEquals;
-
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
-import com.google.inject.testing.fieldbinder.Bind;
-import com.google.inject.testing.fieldbinder.BoundFieldModule;
-import java.util.ArrayList;
-import java.util.List;
+import com.google.inject.Provides;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import javax.inject.Inject;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import javax.inject.Qualifier;
 
-/** Unit test for simple App. */
-@RunWith(JUnit4.class)
-public final class AppTest {
-  private final List<String> messages = new ArrayList<>();
+/** Hello world, Guice! */
+public class App {
+  @Qualifier
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface Message {}
 
-  @Bind @App.Message private final String message = "hello, test";
+  private final Printer printer;
+  private final String message;
 
-  @Bind
-  private final Printer printer =
-      new Printer() {
-        @Override
-        public void printMessage(String message) {
-          messages.add(message);
-        }
-      };
-
-  @Inject private App app;
-
-  @Before
-  public void setUp() {
-    Guice.createInjector(BoundFieldModule.of(this)).injectMembers(this);
+  @Inject
+  App(Printer printer, @Message String message) {
+    this.printer = printer;
+    this.message = message;
   }
 
-  @Test
-  public void run_printsMessage() {
-    app.run();
+  public void run() {
+    printer.printMessage(message);
+  }
 
-    assertEquals(1, messages.size());
-    assertEquals(message, messages.get(0));
+  public static void main(String[] args) {
+    Printer consolePrinter =
+        new Printer() {
+          @Override
+          public void printMessage(String message) {
+            System.out.println(message);
+          }
+        };
+    App app =
+        Guice.createInjector(
+                new MessageModule(),
+                new AbstractModule() {
+                  @Override
+                  protected void configure() {
+                    bind(Printer.class).toInstance(consolePrinter);
+                  }
+                })
+            .getInstance(App.class);
+    app.run();
+  }
+
+  static class MessageModule extends AbstractModule {
+    @Provides
+    @Message
+    String provideMessage() {
+      return "Hello, Guice!";
+    }
+  }
+}
+package com.example;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Provides;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import javax.inject.Inject;
+import javax.inject.Qualifier;
+
+/** Hello world, Guice! */
+public class App {
+  @Qualifier
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface Message {}
+
+  private final Printer printer;
+  private final String message;
+
+  @Inject
+  App(Printer printer, @Message String message) {
+    this.printer = printer;
+    this.message = message;
+  }
+
+  public void run() {
+    printer.printMessage(message);
+  }
+
+  public static void main(String[] args) {
+    Printer consolePrinter =
+        new Printer() {
+          @Override
+          public void printMessage(String message) {
+            System.out.println(message);
+          }
+        };
+    App app =
+        Guice.createInjector(
+                new MessageModule(),
+                new AbstractModule() {
+                  @Override
+                  protected void configure() {
+                    bind(Printer.class).toInstance(consolePrinter);
+                  }
+                })
+            .getInstance(App.class);
+    app.run();
+  }
+
+  static class MessageModule extends AbstractModule {
+    @Provides
+    @Message
+    String provideMessage() {
+      return "Hello, Guice!";
+    }
   }
 }
