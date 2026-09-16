@@ -1,90 +1,174 @@
-/*
- * Copyright (C) 2006 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+package com.example;
 
-package com.google.inject.example;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Provides;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import javax.inject.Inject;
+import javax.inject.Qualifier;
 
-import static junit.framework.Assert.assertTrue;
+/** Hello world, Guice! */
+public class App {
+  @Qualifier
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface Message {}
 
-/** @author crazybob@google.com (Bob Lee) */
-public class ClientServiceWithFactories {
+  private final Printer printer;
+  private final String message;
 
-  // 58 lines
-
-  public interface Service {
-    void go();
+  @Inject
+  App(Printer printer, @Message String message) {
+    this.printer = printer;
+    this.message = message;
   }
 
-  public static class ServiceImpl implements Service {
-    @Override
-    public void go() {
-      // ...
-    }
-  }
-
-  public static class ServiceFactory {
-
-    private ServiceFactory() {}
-
-    private static Service instance = new ServiceImpl();
-
-    public static Service getInstance() {
-      return instance;
-    }
-
-    public static void setInstance(Service service) {
-      instance = service;
-    }
-  }
-
-  public static class Client {
-
-    public void go() {
-      Service service = ServiceFactory.getInstance();
-      service.go();
-    }
-  }
-
-  public void testClient() {
-    Service previous = ServiceFactory.getInstance();
-    try {
-      final MockService mock = new MockService();
-      ServiceFactory.setInstance(mock);
-      Client client = new Client();
-      client.go();
-      assertTrue(mock.isGone());
-    } finally {
-      ServiceFactory.setInstance(previous);
-    }
-  }
-
-  public static class MockService implements Service {
-
-    private boolean gone = false;
-
-    @Override
-    public void go() {
-      gone = true;
-    }
-
-    public boolean isGone() {
-      return gone;
-    }
+  public void run() {
+    printer.printMessage(message);
   }
 
   public static void main(String[] args) {
-    new ClientServiceWithFactories().testClient();
+    Printer consolePrinter =
+        new Printer() {
+          @Override
+          public void printMessage(String message) {
+            System.out.println(message);
+          }
+        };
+    App app =
+        Guice.createInjector(
+                new MessageModule(),
+                new AbstractModule() {
+                  @Override
+                  protected void configure() {
+                    bind(Printer.class).toInstance(consolePrinter);
+                  }
+                })
+            .getInstance(App.class);
+    app.run();
+  }
+
+  static class MessageModule extends AbstractModule {
+    @Provides
+    @Message
+    String provideMessage() {
+      return "Hello, Guice!";
+    }
+  }
+}
+package com.example;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Provides;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import javax.inject.Inject;
+import javax.inject.Qualifier;
+
+/** Hello world, Guice! */
+public class App {
+  @Qualifier
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface Message {}
+
+  private final Printer printer;
+  private final String message;
+
+  @Inject
+  App(Printer printer, @Message String message) {
+    this.printer = printer;
+    this.message = message;
+  }
+
+  public void run() {
+    printer.printMessage(message);
+  }
+
+  public static void main(String[] args) {
+    Printer consolePrinter =
+        new Printer() {
+          @Override
+          public void printMessage(String message) {
+            System.out.println(message);
+          }
+        };
+    App app =
+        Guice.createInjector(
+                new MessageModule(),
+                new AbstractModule() {
+                  @Override
+                  protected void configure() {
+                    bind(Printer.class).toInstance(consolePrinter);
+                  }
+                })
+            .getInstance(App.class);
+    app.run();
+  }
+
+  static class MessageModule extends AbstractModule {
+    @Provides
+    @Message
+    String provideMessage() {
+      return "Hello, Guice!";
+    }
+  }
+}
+package com.example;
+
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Provides;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import javax.inject.Inject;
+import javax.inject.Qualifier;
+
+/** Hello world, Guice! */
+public class App {
+  @Qualifier
+  @Retention(RetentionPolicy.RUNTIME)
+  @interface Message {}
+
+  private final Printer printer;
+  private final String message;
+
+  @Inject
+  App(Printer printer, @Message String message) {
+    this.printer = printer;
+    this.message = message;
+  }
+
+  public void run() {
+    printer.printMessage(message);
+  }
+
+  public static void main(String[] args) {
+    Printer consolePrinter =
+        new Printer() {
+          @Override
+          public void printMessage(String message) {
+            System.out.println(message);
+          }
+        };
+    App app =
+        Guice.createInjector(
+                new MessageModule(),
+                new AbstractModule() {
+                  @Override
+                  protected void configure() {
+                    bind(Printer.class).toInstance(consolePrinter);
+                  }
+                })
+            .getInstance(App.class);
+    app.run();
+  }
+
+  static class MessageModule extends AbstractModule {
+    @Provides
+    @Message
+    String provideMessage() {
+      return "Hello, Guice!";
+    }
   }
 }
